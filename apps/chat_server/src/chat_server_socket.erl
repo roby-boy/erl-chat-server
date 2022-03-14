@@ -27,6 +27,7 @@ init(State = #server_state{port=Port}) ->
 handle_cast({accepted, _Pid}, State=#server_state{}) ->
   io:format("connected~n", []),
   io:format("~w~n", [_Pid]),
+  chat_server_users:put(_Pid, undefined),
 	{noreply, accept(State)}.
 
 accept_loop({Server, LSocket, {M, F}}) ->

@@ -30,7 +30,9 @@ init([]) ->
                  intensity => 1,
                  period => 5},
     ChildSpecs = [#{id => chat_server_manager, 
-                   start => {chat_server_manager, start, []}}],
+                   start => {chat_server_manager, start, []}},
+                   #{id => chat_server_users, 
+                   start => {chat_server_users, start, []}}],
     {ok, {SupFlags, ChildSpecs}}.
 
 %% internal functions
