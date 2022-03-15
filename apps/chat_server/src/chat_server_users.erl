@@ -1,7 +1,7 @@
 -module(chat_server_users).
 -behavior(gen_server).
 -export([init/1, code_change/3, handle_call/3, handle_cast/2, handle_info/2, terminate/2]).
--export([start/0, get/1, get_state/0, put/2, delete/1]).
+-export([start/0, get/1, getName/1, get_state/0, put/2, putSocket/2, putName/2, delete/1]).
 
 start() ->
   gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
@@ -9,11 +9,21 @@ start() ->
 get(Key) ->
     gen_server:call(?MODULE, {get, Key}).
 
+getName(Key) ->
+    gen_server:call(?MODULE, {getName, Key}).
+
 get_state() ->
     gen_server:call(?MODULE, {get_state}).
 
 put(Key, Value) ->
     gen_server:cast(?MODULE, {put, {Key, Value}}).
+
+% on new connection
+putSocket(Key, Value) ->
+    gen_server:cast(?MODULE, {putSocket, {Key, Value}}).
+
+putName(Key, Value) ->
+    gen_server:cast(?MODULE, {putName, {Key, Value}}).
 
 delete(Key) ->
     gen_server:cast(?MODULE, {delete, Key}).
@@ -23,6 +33,11 @@ init([]) ->
 
 handle_call({get, Key}, _From, State) ->
     Response = maps:get(Key, State, undefined),
+    {reply, Response, State};
+
+handle_call({getName, Key}, _From, State) ->
+    Obj = maps:get(Key, State, undefined),
+    Response = maps:get(name, Obj, undefined),
     {reply, Response, State};
 
 handle_call({get_state}, _From, State) ->
@@ -35,6 +50,17 @@ handle_call(_Request, _From, State) ->
 
 handle_cast({put, {Key, Value}}, State) ->
     NewState = maps:put(Key, Value, State),
+    {noreply, NewState};
+
+handle_cast({putSocket, {Key, Value}}, State) ->
+    % NewState = maps:put(Key, Value, State),
+    NewState = State#{Key => #{socket => Value, name => undefined}},
+    {noreply, NewState};
+
+handle_cast({putName, {Key, Value}}, State) ->
+    % NewState = maps:put(Key, Value, State),
+    Com=maps:get(Key, State),
+    NewState = State#{Key => Com#{name := Value}},
     {noreply, NewState};
 
 handle_cast({delete, Key}, State) ->

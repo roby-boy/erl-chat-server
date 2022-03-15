@@ -71,14 +71,14 @@ cmd_user_setname(Pid, Data) ->
   % check if already taken
   if
     true ->
-      chat_server_users:put(Pid, N2),
+      chat_server_users:putName(Pid, N2),
       {ok, "ok\n"};
     false ->
       {ok, "name is not valid; at least 3 chars of letters/numbers"}
   end.
 
 cmd_user_whoami(Pid) ->
-  Val = chat_server_users:get(Pid),
+  Val = chat_server_users:getName(Pid),
   case io_lib:char_list(Val) of
     true -> {ok, Val ++ "\n"};
     false -> {ok, "name is not set yet\n"}

@@ -24,15 +24,16 @@ init(State = #server_state{port=Port}) ->
    			{stop, Reason}
 	end.
 
-handle_cast({accepted, _Pid}, State=#server_state{}) ->
+handle_cast({accepted, Pid, Socket}, State=#server_state{}) ->
   io:format("connected~n", []),
-  io:format("~w~n", [_Pid]),
-  chat_server_users:put(_Pid, undefined),
+  io:format("~w~n", [Pid]),
+  chat_server_users:putSocket(Pid, Socket),
 	{noreply, accept(State)}.
 
 accept_loop({Server, LSocket, {M, F}}) ->
 	{ok, Socket} = gen_tcp:accept(LSocket),
-	gen_server:cast(Server, {accepted, self()}),
+  io:format("~w~n",[Socket]),
+	gen_server:cast(Server, {accepted, self(), Socket}),
 	M:F(Socket, self()).
 	
 accept(State = #server_state{lsocket=LSocket, loop = Loop}) ->
