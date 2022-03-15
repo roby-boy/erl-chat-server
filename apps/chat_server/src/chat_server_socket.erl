@@ -36,7 +36,7 @@ accept_loop({Server, LSocket, {M, F}}) ->
 	M:F(Socket, self()).
 	
 accept(State = #server_state{lsocket=LSocket, loop = Loop}) ->
-	proc_lib:spawn(?MODULE, accept_loop, [{self(), LSocket, Loop}]),
+	proc_lib:spawn_link(?MODULE, accept_loop, [{self(), LSocket, Loop}]),
 	State.
 
 handle_call(_Msg, _Caller, State) -> {noreply, State}.
