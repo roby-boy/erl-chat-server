@@ -84,9 +84,15 @@ cmd_user_whoami(Pid) ->
     false -> {ok, "name is not set yet\n"}
   end.
 
-cmd_default(Str) ->
-  io:format("[str] ~s~n",[Str]),
-  {ok, Str ++ "\n"}.
+cmd_msg(Pid, Data) ->
+  RecvText = re:replace(Data, "<<msg,", "", [{return,list}]),
+  Text = re:replace(RecvText, "^[a-zA-Z0-9]{3,}>>", "", [{return,list}]),
+  Recv = re:replace(RecvText, ">>.*", "", [{return,list}]).
+  % check if exist 
+
+cmd_default(Data) ->
+  io:format("[str] ~s~n",[Data]),
+  {ok, Data ++ "\n"}.
 
 pattern_user_setname(Data) ->
   case re:run(Data, "<<user,setname>>.+") of
@@ -96,11 +102,10 @@ pattern_user_setname(Data) ->
 
 is_valid_name(S) ->
   Strimmed = string:trim(S),
-  case re:run(Strimmed, "^[a-zA-Z0-9_.-]{3,}.*$") of
+  case re:run(Strimmed, "^[a-zA-Z0-9]{3,}.*$") of
     {match, _} -> true;
     nomatch -> false
   end.
-% add control not already taken
 
 pattern_user_list(Data) ->
   case re:run(Data, "<<user,list>>.*") of
@@ -114,11 +119,11 @@ pattern_user_whoami(Data) ->
     nomatch -> false
   end.
 
-% pattern_msg(Data) ->
-%   case re:run(Data, RegexMsg) of
-%     {match, _} -> true;
-%     nomatch -> false
-%   end.
+pattern_msg(Data) ->
+  case re:run(Data, "<<msg,[a-zA-Z0-9]{3,}.*>>.+") of
+    {match, _} -> true;
+    nomatch -> false
+  end.
 
 client_disconnection(Pid) ->
   chat_server_users:delete(Pid),
