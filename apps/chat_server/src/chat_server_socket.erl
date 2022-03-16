@@ -1,7 +1,7 @@
 -module(chat_server_socket).
 -behavior(gen_server).
 -export([init/1, code_change/3, handle_call/3, handle_cast/2, handle_info/2, terminate/2]).
--export([start/2, accept_loop/1]).
+-export([start/2, accept_loop/1, sendByPid/2]).
 
 -define(TCP_OPTIONS, [binary, {packet, 0}, {active, false}, {reuseaddr, true}]).
 
@@ -52,6 +52,14 @@ loop(Socket, Pid) ->
       client_disconnection(Pid),
       ok
   end.
+
+sendByPid([], Resp) ->
+  ok;
+
+sendByPid([H|T], Resp) ->
+  Socket = chat_server_users:getSocketByPid(H),
+  gen_tcp:send(Socket, Resp),
+  sendByPid(T, Resp).
 
 client_disconnection(Pid) ->
   chat_server_users:delete(Pid),

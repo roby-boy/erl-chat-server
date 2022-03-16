@@ -51,9 +51,10 @@ cmd_msg(Pid, Data) ->
     not NameRecvIsSet ->
       {ok, "name recv not set\n"};
     true ->
-      SocketRecv = chat_server_users:getSocketByName(Recv),
       NameSend = chat_server_users:getName(Pid),
-      gen_tcp:send(SocketRecv, "--msgFrom:" ++ NameSend ++ ">" ++ Text ++ "\n"),
+      PidRecv = chat_server_users:getPidByName(Recv),
+      StrToSend = "--msgFrom:" ++ NameSend ++ ">" ++ Text ++ "\n",
+      chat_server_socket:sendByPid([PidRecv], StrToSend),
       {ok, "ok\n"}
   end.
 
