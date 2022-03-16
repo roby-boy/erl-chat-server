@@ -1,16 +1,43 @@
 -module(chat_server_users).
 -behavior(gen_server).
 -export([init/1, code_change/3, handle_call/3, handle_cast/2, handle_info/2, terminate/2]).
--export([start/0, get/1, getName/1, get_state/0, put/2, putSocket/2, putName/2, delete/1]).
+-export([start/0, get/1, getName/1, getAllNames/0, nameIsSet/1, nameIsSetByName/1, getSocketByName/1, get_state/0, put/2, putSocket/2, putName/2, delete/1]).
 
 start() ->
   gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 get(Key) ->
-    gen_server:call(?MODULE, {get, Key}).
+  gen_server:call(?MODULE, {get, Key}).
 
 getName(Key) ->
-    gen_server:call(?MODULE, {getName, Key}).
+  gen_server:call(?MODULE, {getName, Key}).
+
+nameIsSet(Key) ->
+  Name = gen_server:call(?MODULE, {getName, Key}),
+  io_lib:char_list(Name).
+
+nameIsSetByName(Name) ->
+  Resp = get_state(),
+  {current_state, State} = Resp,
+  L=[X || #{name := X} <- maps:values(State)],
+  lists:member(Name,L).
+
+getAllNames() ->
+  Resp = get_state(),
+  {current_state, State} = Resp,
+  Pred = fun(K,V) -> 
+    io_lib:char_list(maps:get(name, V, undefined)) 
+  end,
+  Filtered = maps:filter(Pred,State),
+  ListOfSocketName = maps:values(Filtered),
+  Names = [X || #{name := X} <- ListOfSocketName],
+  Names.
+
+getSocketByName(Name) ->
+  Resp = get_state(),
+  {current_state, State} = Resp,
+  L=[Y || #{name := X, socket := Y} <- maps:values(State), X == Name],
+  lists:nth(1, L).
 
 get_state() ->
     gen_server:call(?MODULE, {get_state}).

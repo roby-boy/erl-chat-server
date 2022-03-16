@@ -23,6 +23,7 @@ manage_cmd_get_resp(Data, Pid) ->
   Pattern_user_setname = pattern_user_setname(Data),
   Pattern_user_list_res = pattern_user_list(Data),
   Pattern_user_whoami = pattern_user_whoami(Data),
+  Pattern_msg = pattern_msg(Data),
   if
     Pattern_user_setname ->
       cmd_user_setname(Pid, Data);
@@ -30,9 +31,8 @@ manage_cmd_get_resp(Data, Pid) ->
       cmd_user_list();
     Pattern_user_whoami ->
       cmd_user_whoami(Pid);
-    % pattern_msg(Data) ->
-    %   io:format("~p~n",[Data]),
-    %   ok;
+    Pattern_msg ->
+      cmd_msg(Pid, Data);
     % "<<room,list>>" ++ _ ->
     %   ok;
     % "<<room,userlist," ++ RoomNameList ++ ">>" ++ _ ->
@@ -53,45 +53,55 @@ manage_cmd_get_resp(Data, Pid) ->
 
 cmd_user_list() ->
   io:format("[cmd] <<user,list>>~n",[]),
-  S = chat_server_users:get_state(),
-  io:format("~p~n",[S]),
-  {current_state, State} = S,
-  Pred = fun(K,V) -> io_lib:char_list(V) end,
-  Filtered = maps:filter(Pred,State),
-  Keys = maps:values(Filtered),
-  io:format("~p~n",[Keys]),
-  Resp = "users:" ++ string:join(Keys,",") ++ "\n",
-  io:format("~s~n",[Resp]),
+  Names = chat_server_users:getAllNames(),
+  io:format("~p~n",[Names]),
+  Resp = "users:" ++ string:join(Names,",") ++ "\n",
   {ok, Resp}.
 
 cmd_user_setname(Pid, Data) ->
+  io:format("[cmd] <<user,setname>>~n",[]),
   N1 = re:replace(Data, "<<user,setname>>", "", [{return,list}]),
   N2 = string:trim(N1),
   Ntest = is_valid_name(N2),
   % check if already taken
   if
-    true ->
+    Ntest ->
       chat_server_users:putName(Pid, N2),
       {ok, "ok\n"};
-    false ->
-      {ok, "name is not valid; at least 3 chars of letters/numbers"}
+    true ->
+      {ok, "name is not valid; at least 3 chars of letters/numbers~n"}
   end.
 
 cmd_user_whoami(Pid) ->
-  Val = chat_server_users:getName(Pid),
-  case io_lib:char_list(Val) of
-    true -> {ok, Val ++ "\n"};
+  Name = chat_server_users:getName(Pid),
+  case io_lib:char_list(Name) of
+    true -> {ok, Name ++ "\n"};
     false -> {ok, "name is not set yet\n"}
   end.
 
 cmd_msg(Pid, Data) ->
   RecvText = re:replace(Data, "<<msg,", "", [{return,list}]),
-  Text = re:replace(RecvText, "^[a-zA-Z0-9]{3,}>>", "", [{return,list}]),
-  Recv = re:replace(RecvText, ">>.*", "", [{return,list}]).
-  % check if exist 
+  RecvTextNoRC = re:replace(RecvText, "\n", "", [{return,list}]),
+  Text = re:replace(RecvTextNoRC, "[a-zA-Z0-9]{3,}+>>", "", [{return,list}]),
+  Recv = re:replace(RecvTextNoRC, ">>.*", "", [{return,list}]),
+  io:format("Recv:~s~n",[Recv]),
+  io:format("Text:~s~n",[Text]),
+  NameSendIsSet = chat_server_users:nameIsSet(Pid), % sender
+  NameRecvIsSet = chat_server_users:nameIsSetByName(Recv), % receiver
+  if
+    not NameSendIsSet ->
+      {ok, "name send not set\n"};
+    not NameRecvIsSet ->
+      {ok, "name recv not set\n"};
+    true ->
+      SocketRecv = chat_server_users:getSocketByName(Recv),
+      NameSend = chat_server_users:getName(Pid),
+      gen_tcp:send(SocketRecv, "--msgFrom:" ++ NameSend ++ ">" ++ Text ++ "\n"),
+      {ok, "ok\n"}
+  end.
 
 cmd_default(Data) ->
-  io:format("[str] ~s~n",[Data]),
+  io:format("[cmd_default] ~s~n",[Data]),
   {ok, Data ++ "\n"}.
 
 pattern_user_setname(Data) ->
@@ -102,7 +112,7 @@ pattern_user_setname(Data) ->
 
 is_valid_name(S) ->
   Strimmed = string:trim(S),
-  case re:run(Strimmed, "^[a-zA-Z0-9]{3,}.*$") of
+  case re:run(Strimmed, "^[a-zA-Z0-9]{3,}+$") of
     {match, _} -> true;
     nomatch -> false
   end.
@@ -120,7 +130,7 @@ pattern_user_whoami(Data) ->
   end.
 
 pattern_msg(Data) ->
-  case re:run(Data, "<<msg,[a-zA-Z0-9]{3,}.*>>.+") of
+  case re:run(Data, "<<msg,[a-zA-Z0-9]{3,}+>>+") of
     {match, _} -> true;
     nomatch -> false
   end.
