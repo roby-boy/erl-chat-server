@@ -68,14 +68,16 @@ cmd_user_setname(Pid, Data) ->
   io:format("[cmd] <<user,setname>>~n",[]),
   N1 = re:replace(Data, "<<user,setname>>", "", [{return,list}]),
   N2 = string:trim(N1),
-  Ntest = is_valid_name(N2),
-  % check if already taken
+  Ntest1 = is_valid_name(N2),
+  Ntest2 = chat_server_users:nameIsSetByName(N2),
   if
-    Ntest ->
-      chat_server_users:putName(Pid, N2),
-      {ok, "ok\n"};
+    not Ntest1 ->
+      {ok, "name is not valid; at least 3 chars of letters/numbers\n"};
+    Ntest2 ->
+      {ok, "name is already used\n"};   
     true ->
-      {ok, "name is not valid; at least 3 chars of letters/numbers~n"}
+      chat_server_users:putName(Pid, N2),
+      {ok, "ok\n"}
   end.
 
 cmd_user_whoami(Pid) ->
