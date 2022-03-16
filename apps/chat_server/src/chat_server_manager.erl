@@ -1,5 +1,5 @@
 -module(chat_server_manager).
--export([start/0, loop/2]).
+-export([start/0, manage_cmd_get_resp/2]).
 
 -define(ReValidName, "^[a-zA-Z0-9]{3,}+$").
 -define(RePatternUserlist, "<<user,list>>.*").
@@ -8,21 +8,7 @@
 -define(RePatternMsg, "<<msg,[a-zA-Z0-9]{3,}+>>+").
 
 start() ->
-  chat_server_socket:start(?MODULE, 7000, {?MODULE, loop}).
-
-loop(Socket, Pid) ->
-  case gen_tcp:recv(Socket, 0) of
-    {ok, Data} ->
-      io:format("~s", [Data]),
-      case manage_cmd_get_resp(Data, Pid) of
-        {ok, Resp} -> gen_tcp:send(Socket, Resp);
-        _ -> ok
-      end,
-      loop(Socket, Pid);
-    {error, closed} ->
-      client_disconnection(Pid),
-      ok
-  end.
+  chat_server_socket:start(?MODULE, 7000).
 
 manage_cmd_get_resp(Data, Pid) ->
   Str = binary_to_list(string:chomp(Data)),
@@ -79,9 +65,4 @@ pattern_msg(Data) ->
   case re:run(Data, ?RePatternMsg) of
     {match, _} -> true;
     nomatch -> false
-  end.
-
-client_disconnection(Pid) ->
-  chat_server_users:delete(Pid),
-  io:format("error - closed ~w~n", [Pid]).
-  
+  end.  
