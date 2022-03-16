@@ -1,6 +1,12 @@
 -module(chat_server_manager).
 -export([start/0, loop/2]).
 
+-define(ReValidName, "^[a-zA-Z0-9]{3,}+$").
+-define(RePatternUserlist, "<<user,list>>.*").
+-define(RePatternWhoami, "<<user,whoami>>.*").
+-define(RePatternSetname, "<<user,setname>>.+").
+-define(RePatternMsg, "<<msg,[a-zA-Z0-9]{3,}+>>+").
+
 start() ->
   chat_server_socket:start(?MODULE, 7000, {?MODULE, loop}).
 
@@ -10,7 +16,7 @@ loop(Socket, Pid) ->
       io:format("~s", [Data]),
       case manage_cmd_get_resp(Data, Pid) of
         {ok, Resp} -> gen_tcp:send(Socket, Resp);
-        {ok, _} -> ok
+        _ -> ok
       end,
       loop(Socket, Pid);
     {error, closed} ->
@@ -105,32 +111,31 @@ cmd_default(Data) ->
   {ok, Data ++ "\n"}.
 
 pattern_user_setname(Data) ->
-  case re:run(Data, "<<user,setname>>.+") of
+  case re:run(Data, ?RePatternSetname) of
     {match, _} -> true;
     nomatch -> false
   end.
 
 is_valid_name(S) ->
-  Strimmed = string:trim(S),
-  case re:run(Strimmed, "^[a-zA-Z0-9]{3,}+$") of
+  case re:run(S, ?ReValidName) of
     {match, _} -> true;
     nomatch -> false
   end.
 
 pattern_user_list(Data) ->
-  case re:run(Data, "<<user,list>>.*") of
+  case re:run(Data, ?RePatternUserlist) of
     {match, _} -> true;
     nomatch -> false
   end.
 
 pattern_user_whoami(Data) ->
-  case re:run(Data, "<<user,whoami>>.*") of
+  case re:run(Data, ?RePatternWhoami) of
     {match, _} -> true;
     nomatch -> false
   end.
 
 pattern_msg(Data) ->
-  case re:run(Data, "<<msg,[a-zA-Z0-9]{3,}+>>+") of
+  case re:run(Data, ?RePatternMsg) of
     {match, _} -> true;
     nomatch -> false
   end.
