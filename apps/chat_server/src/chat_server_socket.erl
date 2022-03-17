@@ -1,36 +1,35 @@
 -module(chat_server_socket).
 -behavior(gen_server).
 -export([init/1, code_change/3, handle_call/3, handle_cast/2, handle_info/2, terminate/2]).
--export([start/1, accept_loop/1, sendByPid/2]).
+-export([start/0, accept_loop/1, sendByPid/2]).
 
 -define(TCP_OPTIONS, [binary, {packet, 0}, {active, false}, {reuseaddr, true}]).
 
--record(server_state, {
-		port,
-		lsocket=null}).
+-record(server_state, {port, lsocket=null}).
 
-start(Port = 7000) ->
-	State = #server_state{port = Port},
-	gen_server:start_link({local, ?MODULE}, ?MODULE, State, []).
+start() ->
+  PortS = os:getenv("PORT", 7000),
+  Port = list_to_integer(PortS),
+  State = #server_state{port = Port},
+  gen_server:start_link({local, ?MODULE}, ?MODULE, State, []).
 
 init(State = #server_state{port=Port}) ->
-	case gen_tcp:listen(Port, ?TCP_OPTIONS) of
-   		{ok, LSocket} ->
-   			NewState = State#server_state{lsocket = LSocket},
-   			{ok, accept(NewState)};
-   		{error, Reason} ->
-   			{stop, Reason}
-	end.
+  case gen_tcp:listen(Port, ?TCP_OPTIONS) of
+    {ok, LSocket} ->
+      io:format("[x] server listening on port ~B~n", [Port]),
+      NewState = State#server_state{lsocket = LSocket},
+      {ok, accept(NewState)};
+   	{error, Reason} ->
+      {stop, Reason}
+  end.
 
 handle_cast({accepted, Pid, Socket}, State=#server_state{}) ->
-  io:format("connected~n", []),
-  io:format("~w~n", [Pid]),
   chat_server_users:putSocket(Pid, Socket),
 	{noreply, accept(State)}.
 
 accept_loop({Server, LSocket}) ->
 	{ok, Socket} = gen_tcp:accept(LSocket),
-  io:format("~w~n",[Socket]),
+  io:format("[x] client connected - pid:~w - socket:~w~n", [self(), Socket]),
 	gen_server:cast(Server, {accepted, self(), Socket}),
 	loop(Socket, self()).
 	
