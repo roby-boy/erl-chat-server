@@ -8,8 +8,8 @@
 -record(server_state, {port, lsocket=null}).
 
 start() ->
-  PortS = os:getenv("PORT", 7000),
-  Port = list_to_integer(PortS),
+  % PortS = os:getenv("PORT", "7000"), // some situation error
+  Port = 7000,
   State = #server_state{port = Port},
   gen_server:start_link({local, ?MODULE}, ?MODULE, State, []).
 
