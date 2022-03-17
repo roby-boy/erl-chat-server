@@ -1,18 +1,17 @@
 -module(chat_server_socket).
 -behavior(gen_server).
 -export([init/1, code_change/3, handle_call/3, handle_cast/2, handle_info/2, terminate/2]).
--export([start/2, accept_loop/1, sendByPid/2]).
+-export([start/1, accept_loop/1, sendByPid/2]).
 
 -define(TCP_OPTIONS, [binary, {packet, 0}, {active, false}, {reuseaddr, true}]).
 
 -record(server_state, {
 		port,
-		ip=any,
 		lsocket=null}).
 
-start(Name, Port) ->
+start(Port = 7000) ->
 	State = #server_state{port = Port},
-	gen_server:start_link({local, Name}, ?MODULE, State, []).
+	gen_server:start_link({local, ?MODULE}, ?MODULE, State, []).
 
 init(State = #server_state{port=Port}) ->
 	case gen_tcp:listen(Port, ?TCP_OPTIONS) of
@@ -53,7 +52,7 @@ loop(Socket, Pid) ->
       ok
   end.
 
-sendByPid([], Resp) ->
+sendByPid([], _) ->
   ok;
 
 sendByPid([H|T], Resp) ->

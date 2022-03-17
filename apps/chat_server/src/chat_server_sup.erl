@@ -30,8 +30,8 @@ init([]) ->
                  intensity => 1,
                  period => 5},
     ChildSpecs = [
-      #{id => chat_server_manager, 
-        start => {chat_server_manager, start, []}},
+      #{id => chat_server_socket, 
+        start => {chat_server_socket, start, [7000]}},
       #{id => chat_server_users, 
         start => {chat_server_users, start, []}},
       #{id => chat_server_rooms, 

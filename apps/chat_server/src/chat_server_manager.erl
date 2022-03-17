@@ -1,5 +1,5 @@
 -module(chat_server_manager).
--export([start/0, manage_cmd_get_resp/2]).
+-export([manage_cmd_get_resp/2]).
 
 -define(ReValidName, "[a-zA-Z0-9]{3,}").
 -define(RePatternUserlist, "<<user,list>>*").
@@ -13,9 +13,6 @@
 -define(RePatternRoomJoin, "<<room,join>>*").
 -define(RePatternRoomLeave, "<<room,leave>>*").
 -define(RePatternRoomMsg, "<<room,msg," ++ ?ReValidName ++ ">>*").
-
-start() ->
-  chat_server_socket:start(?MODULE, 7000).
 
 manage_cmd_get_resp(Data, Pid) ->
   Str = binary_to_list(string:chomp(Data)),
