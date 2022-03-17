@@ -1,7 +1,7 @@
 -module(chat_server_users).
 -behavior(gen_server).
 -export([init/1, code_change/3, handle_call/3, handle_cast/2, handle_info/2, terminate/2]).
--export([start/0, get/1, getName/1, getAllNames/0, nameIsSet/1, nameIsSetByName/1, getSocketByName/1, getSocketByPid/1, getPidByName/1, get_state/0, put/2, putSocket/2, putName/2, delete/1]).
+-export([start/0, get/1, getName/1, getAllNames/0, nameIsSet/1, nameIsSetByName/1, getSocketByName/1, getSocketByPid/1, getPidByName/1, get_state/0, put/2, putSocket/2, putName/2, delete/1, from_pid_to_name/1]).
 
 start() ->
   gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
@@ -70,6 +70,19 @@ putName(Key, Value) ->
 
 delete(Key) ->
     gen_server:cast(?MODULE, {delete, Key}).
+
+from_pid_to_name(L) ->
+  from_pid_to_name(L, []).
+
+from_pid_to_name([], Acc) ->
+  Acc;
+
+from_pid_to_name([H|T], Acc) ->
+  Resp = get_state(),
+  {current_state, State} = Resp,
+  Obj = maps:get(H, State, undefined),
+  Name = maps:get(name, Obj, undefined),
+  from_pid_to_name(T, [Name|Acc]).
 
 init([]) ->
   {ok, #{}}.

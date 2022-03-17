@@ -63,6 +63,7 @@ sendByPid([H|T], Resp) ->
 
 client_disconnection(Pid) ->
   chat_server_users:delete(Pid),
+  chat_server_rooms:delete_pid(Pid),
   io:format("error - closed ~w~n", [Pid]).
 
 handle_call(_Msg, _Caller, State) -> {noreply, State}.
