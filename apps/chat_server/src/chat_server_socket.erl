@@ -16,7 +16,7 @@ start() ->
 init(State = #server_state{port=Port}) ->
   case gen_tcp:listen(Port, ?TCP_OPTIONS) of
     {ok, LSocket} ->
-      io:format("[x] server listening on port ~B~n", [Port]),
+      io:format("[x] server listening on port ~B - pid:~w~n", [Port, self()]),
       NewState = State#server_state{lsocket = LSocket},
       {ok, accept(NewState)};
    	{error, Reason} ->
