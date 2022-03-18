@@ -2,17 +2,17 @@
 -export([manage_cmd_get_resp/2]).
 
 -define(ReValidName, "[a-zA-Z0-9]{3,}").
--define(RePatternUserlist, "<<user,list>>*").
--define(RePatternWhoami, "<<user,whoami>>*").
--define(RePatternSetname, "<<user,setname>>*").
--define(RePatternMsg, "<<msg," ++ ?ReValidName ++ ">>*").
--define(RePatternRoomlist,"<<room,list>>*").
--define(RePatternRoomCreate, "<<room,create>>*").
--define(RePatternRoomDelete, "<<room,delete>>*").
--define(RePatternRoomUserlist, "<<room,userlist>>*").
--define(RePatternRoomJoin, "<<room,join>>*").
--define(RePatternRoomLeave, "<<room,leave>>*").
--define(RePatternRoomMsg, "<<room,msg," ++ ?ReValidName ++ ">>*").
+-define(RePatternUserlist, "<<user,list>>+").
+-define(RePatternWhoami, "<<user,whoami>>+").
+-define(RePatternSetname, "<<user,setname>>+").
+-define(RePatternMsg, "<<msg," ++ ?ReValidName ++ ">>+").
+-define(RePatternRoomlist,"<<room,list>>+").
+-define(RePatternRoomCreate, "<<room,create>>+").
+-define(RePatternRoomDelete, "<<room,delete>>+").
+-define(RePatternRoomUserlist, "<<room,userlist>>+").
+-define(RePatternRoomJoin, "<<room,join>>+").
+-define(RePatternRoomLeave, "<<room,leave>>+").
+-define(RePatternRoomMsg, "<<room,msg," ++ ?ReValidName ++ ">>+").
 
 manage_cmd_get_resp(Data, Pid) ->
   Str = binary_to_list(string:chomp(Data)),
