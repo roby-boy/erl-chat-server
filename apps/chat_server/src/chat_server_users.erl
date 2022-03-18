@@ -25,7 +25,7 @@ nameIsSetByName(Name) ->
 getAllNames() ->
   Resp = get_state(),
   {current_state, State} = Resp,
-  Pred = fun(K,V) -> 
+  Pred = fun(_,V) -> 
     io_lib:char_list(maps:get(name, V, undefined)) 
   end,
   Filtered = maps:filter(Pred,State),
@@ -48,7 +48,7 @@ getSocketByPid(Key) ->
 getPidByName(Name) ->
   Resp = get_state(),
   {current_state, State} = Resp,
-  Pred = fun(K,V) -> 
+  Pred = fun(_,V) -> 
     maps:get(name, V, undefined) == Name
   end,
   Filtered = maps:filter(Pred,State),

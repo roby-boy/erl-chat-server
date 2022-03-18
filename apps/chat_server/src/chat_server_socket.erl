@@ -34,7 +34,7 @@ accept_loop({Server, LSocket}) ->
 	loop(Socket, self()).
 	
 accept(State = #server_state{lsocket=LSocket}) ->
-	proc_lib:spawn_link(?MODULE, accept_loop, [{self(), LSocket}]),
+	spawn_link(?MODULE, accept_loop, [{self(), LSocket}]),
 	State.
 
 loop(Socket, Pid) ->

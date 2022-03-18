@@ -59,7 +59,7 @@ delete_pid(Pid) ->
   L = maps:keys(State),
   delete_pid(L, Pid).
 
-delete_pid([], Pid) ->
+delete_pid([], _) ->
   ok;
 
 delete_pid([H|T], Pid) ->
