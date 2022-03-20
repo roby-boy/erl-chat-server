@@ -41,4 +41,4 @@ Note: as soon as you connect to the server, you have to setname, otherwise the a
 
 Chat responses:<br />
 if the command sent if not present in the list, server responds with the same text sent;<br />
-if the command is correct, the answer is "ok" for PUT / DELETE / UPDATE request (ex <<user,setname>>{name}), arbitrary data for GET request (ex <<user,list>>)
+if the command is correct, the answer is "ok" for PUT / DELETE / UPDATE request (ex <<user,setname>>{name}), otherwise arbitrary data for GET request (ex <<user,list>>)
