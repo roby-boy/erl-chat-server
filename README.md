@@ -1,9 +1,14 @@
-chat_server
+Simple Chat Server
 =====
 
-An OTP application
+Simple chat server on port 7000<br /> 
+An Erlang/OTP 22
 
-Build
+Build & Launch
 -----
+By rebar3 shell<br /> 
+```rebar3 shell```
 
-    $ rebar3 compile
+By rebar3 release<br /> 
+```rebar3 release```
+```./_build/default/rel/chat_server/bin/chat_server foreground```
