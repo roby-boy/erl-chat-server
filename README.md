@@ -2,7 +2,8 @@ Simple Chat Server
 =====
 
 Simple chat server on port 7000<br /> 
-An Erlang/OTP 22 application
+An Erlang/OTP 22 application<br /> 
+Rebar3 project
 
 Build & Launch
 -----
@@ -21,7 +22,7 @@ Telnet can be used to chat with the server
 
 Below the available commands (I hope they are self explicative)
 ```
-<<user,setname>>
+<<user,setname>>{username}
 <<user,whoami>>
 <<user,list>>
 <<msg,{username}>>{textmsg}
@@ -39,5 +40,5 @@ regex for name user / room: [a-zA-Z0-9]{3,}
 Note: as soon as you connect to the server, you have to setname, otherwise the all other commands will be forbidden
 
 Chat responses:<br />
-if the command sent if not present in the list, server respond with the same text sent;<br />
-if the command is correct, the answer is "ok" for PUT / DELETE / UPDATE request (ex <<user,setname>>), arbitrary data for GET request (ex <<user,list>>)
+if the command sent if not present in the list, server responds with the same text sent;<br />
+if the command is correct, the answer is "ok" for PUT / DELETE / UPDATE request (ex <<user,setname>>{name}), arbitrary data for GET request (ex <<user,list>>)
