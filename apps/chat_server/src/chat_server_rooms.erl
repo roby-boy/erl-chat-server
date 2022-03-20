@@ -1,7 +1,7 @@
 -module(chat_server_rooms).
 -behavior(gen_server).
 -export([init/1, code_change/3, handle_call/3, handle_cast/2, handle_info/2, terminate/2]).
--export([start/0, get_all_rooms/0, get_users/1, is_room_available/1, put_room/1, delete_room/1, is_user_in_room/2, join_room/2, leave_room/2, delete_pid/1]).
+-export([start/0, get_all_rooms/0, get_users/1, is_room_available/1, put_room/1, delete_room/1, is_user_in_room/2, get_all_rooms_by_user/1, join_room/2, leave_room/2, delete_pid/1]).
 
 start() ->
   gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
@@ -46,6 +46,16 @@ is_user_in_room(Room, User) ->
     false ->
       false
   end.
+
+get_all_rooms_by_user(User) ->
+  Resp = get_state(),
+  {current_state, State} = Resp,
+  Pred = fun(K,V) -> 
+    LUsersPerRoom = maps:get(K, State, undefined),
+    lists:member(User,LUsersPerRoom)
+  end,
+  Filtered = maps:filter(Pred,State),
+  maps:keys(Filtered).
 
 join_room(Room, User) ->
   gen_server:cast(?MODULE, {join_room, {Room, User}}).

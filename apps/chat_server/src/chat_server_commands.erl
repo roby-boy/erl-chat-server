@@ -1,5 +1,5 @@
 -module(chat_server_commands).
--export([cmd_user_list/0, cmd_user_setname/2, cmd_user_whoami/1, cmd_msg/2, cmd_default/1,cmd_name_not_set/0, cmd_room_list/0, cmd_room_create/1, cmd_room_delete/1, cmd_room_join/2, cmd_room_leave/2, cmd_room_userlist/1, cmd_room_msg/2]).
+-export([cmd_user_list/0, cmd_user_setname/2, cmd_user_whoami/1, cmd_msg/2, cmd_default/1,cmd_name_not_set/0, cmd_room_list/0, cmd_room_create/1, cmd_room_delete/1, cmd_room_join/2, cmd_room_leave/2, cmd_room_userlist/1, cmd_room_msg/2, cmd_room_belong/1]).
 
 -define(ReValidName, "^[a-zA-Z0-9]{3,}$").
 -define(StrNameNotValid, "name is not valid; at least 3 chars of letters/numbers").
@@ -175,3 +175,10 @@ cmd_room_msg(Pid, Data) ->
       chat_server_socket:sendByPid(UsersPid, StrToSend),
       {ok, "ok\n"}
   end.
+
+cmd_room_belong(Pid) ->
+  io:format("cmd_room_belong~n"),
+  Rooms = chat_server_rooms:get_all_rooms_by_user(Pid),
+  io:format("~p~n",[Rooms]),
+  Resp = "rooms belong:" ++ string:join(Rooms,",") ++ "\n",
+  {ok, Resp}.

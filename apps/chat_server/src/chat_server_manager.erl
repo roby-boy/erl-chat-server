@@ -13,6 +13,7 @@
 -define(RePatternRoomJoin, "<<room,join>>+").
 -define(RePatternRoomLeave, "<<room,leave>>+").
 -define(RePatternRoomMsg, "<<room,msg," ++ ?ReValidName ++ ">>+").
+-define(RePatternRoomBelong, "<<room,belong>>+").
 
 manage_cmd_get_resp(Data, Pid) ->
   Str = binary_to_list(string:chomp(Data)),
@@ -27,6 +28,7 @@ manage_cmd_get_resp(Data, Pid) ->
   Pattern_room_join = pattern_room_join(Data),
   Pattern_room_leave = pattern_room_leave(Data),
   Pattern_room_msg = pattern_room_msg(Data),
+  Pattern_room_belong = pattern_room_belong(Data),
   IsNameSet = chat_server_users:nameIsSet(Pid),
   if
     Pattern_user_setname ->
@@ -53,6 +55,8 @@ manage_cmd_get_resp(Data, Pid) ->
       chat_server_commands:cmd_room_leave(Pid, Data);
     Pattern_room_msg ->
       chat_server_commands:cmd_room_msg(Pid, Data);
+    Pattern_room_belong ->
+      chat_server_commands:cmd_room_belong(Pid);
     true ->
       chat_server_commands:cmd_default(Str)
   end.
@@ -119,6 +123,12 @@ pattern_room_leave(Data) ->
 
 pattern_room_msg(Data) ->
   case re:run(Data, ?RePatternRoomMsg) of
+    {match, _} -> true;
+    nomatch -> false
+  end.
+
+pattern_room_belong(Data) ->
+  case re:run(Data, ?RePatternRoomBelong) of
     {match, _} -> true;
     nomatch -> false
   end.
